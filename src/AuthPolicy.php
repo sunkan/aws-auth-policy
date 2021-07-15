@@ -29,7 +29,7 @@ final class AuthPolicy implements \JsonSerializable
         self::ALL,
     ];
 
-    /** @var array{int, array{effect: string, arn: string, conditions: null|mixed[]}} */
+    /** @var array<int, array{effect: string, arn: string, conditions: null|mixed[]}> */
     private array $statements = [];
 
     private string $region;
@@ -78,6 +78,9 @@ final class AuthPolicy implements \JsonSerializable
         );
     }
 
+    /**
+     * @param mixed[]|null $conditions
+     */
     public function allow(string $verb, string $resource = self::ALL, ?array $conditions = null): void
     {
         $this->add(
@@ -88,6 +91,9 @@ final class AuthPolicy implements \JsonSerializable
         );
     }
 
+    /**
+     * @param mixed[]|null $conditions
+     */
     public function deny(string $verb, string $resource = self::ALL, ?array $conditions = null): void
     {
         $this->add(
@@ -98,6 +104,9 @@ final class AuthPolicy implements \JsonSerializable
         );
     }
 
+    /**
+     * @return mixed[]
+     */
     public function build(): array
     {
         if (!$this->statements) {
@@ -148,6 +157,9 @@ final class AuthPolicy implements \JsonSerializable
         return $policy;
     }
 
+    /**
+     * @param mixed[]|null $conditions
+     */
     private function add(string $effect, string $verb, string $resource, ?array $conditions = null): void
     {
         if (!in_array($effect, [self::ALLOW, self::DENY])) {
