@@ -87,7 +87,7 @@ final class AuthPolicyTest extends TestCase
                 'Statement' => [
                     [
                         'Action' => 'execute-api:Invoke',
-                        'Effect' => 'Deny',
+                        'Effect' => 'Allow',
                         'Resource' => [
                             'arn:aws:execute-api::eu-west-1:50505050:*/prod/GET/view-article',
                         ],
