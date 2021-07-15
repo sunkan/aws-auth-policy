@@ -4,6 +4,8 @@ namespace Tests;
 
 use PHPUnit\Framework\TestCase;
 use Sunkan\AwsAuthPolicy\AuthPolicy;
+use Sunkan\AwsAuthPolicy\ResourcePolicy;
+use Tests\Stub\StubResourcePolicy;
 
 final class AuthPolicyTest extends TestCase
 {
@@ -228,5 +230,38 @@ final class AuthPolicyTest extends TestCase
                 ],
             ],
         ], $policy->build());
+    }
+
+    public function testResourcePolicy()
+    {
+        $policy = new AuthPolicy(
+            'me',
+            '50505050',
+            [
+                'region' => 'eu-west-1',
+                'stage' => 'prod',
+            ],
+        );
+
+        $resourcePolicy = new StubResourcePolicy();
+
+        $policy->addResourcePolicy($resourcePolicy);
+
+        self::assertSame([
+            'principalId' => 'me',
+            'policyDocument' => [
+                'Version' => '2012-10-17',
+                'Statement' => [
+                    [
+                        'Action' => 'execute-api:Invoke',
+                        'Effect' => 'Allow',
+                        'Resource' => [
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/GET/test/path',
+                        ],
+                    ],
+                ],
+            ],
+        ], $policy->build());
+
     }
 }

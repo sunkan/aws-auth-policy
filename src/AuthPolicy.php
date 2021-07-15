@@ -31,6 +31,8 @@ final class AuthPolicy implements \JsonSerializable
 
     /** @var array<int, array{effect: string, arn: string, conditions: null|mixed[]}> */
     private array $statements = [];
+    /** @var ResourcePolicy[] */
+    private array $resourcePolicies = [];
 
     private string $region;
     private string $stage;
@@ -104,11 +106,20 @@ final class AuthPolicy implements \JsonSerializable
         );
     }
 
+    public function addResourcePolicy(ResourcePolicy $policy): void
+    {
+        $this->resourcePolicies[] = $policy;
+    }
+
     /**
      * @return mixed[]
      */
     public function build(): array
     {
+        foreach ($this->resourcePolicies as $resourcePolicy) {
+            $resourcePolicy->configurePolicy($this);
+        }
+
         if (!$this->statements) {
             throw new \RuntimeException('No statements defined in policy');
         }
