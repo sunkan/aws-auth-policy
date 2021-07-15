@@ -3,7 +3,7 @@
 [![Latest Version on Packagist](https://img.shields.io/packagist/v/sunkan/aws-auth-policy.svg)](https://packagist.org/packages/sunkan/aws-auth-policy)
 [![Software License](https://img.shields.io/github/license/sunkan/aws-auth-policy.svg)](LICENSE)
 [![Build Status](https://github.com/sunkan/aws-auth-policy/actions/workflows/unit-test.yml/badge.svg)](https://github.com/sunkan/aws-auth-policy/actions/workflows/unit-test.yml)
-[![Coverage Status](https://coveralls.io/repos/github/sunkan/aws-auth-policy/badge.svg?branch=2.x)](https://coveralls.io/github/sunkan/aws-auth-policy?branch=main)
+[![Coverage Status](https://coveralls.io/repos/github/sunkan/aws-auth-policy/badge.svg?branch=main)](https://coveralls.io/github/sunkan/aws-auth-policy?branch=main)
 
 ## Installation
 
