@@ -29,7 +29,7 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Allow',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/*/*',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/*/*',
                         ],
                     ],
                 ],
@@ -59,7 +59,7 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Deny',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/*/*',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/*/*',
                         ],
                     ],
                 ],
@@ -89,7 +89,7 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Allow',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/GET/view-article',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/GET/view-article',
                         ],
                     ],
                 ],
@@ -121,14 +121,14 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Allow',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/GET/view-article',
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/PUT/update-article',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/GET/view-article',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/PUT/update-article',
                         ],
                     ], [
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Deny',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/DELETE/delete-article',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/DELETE/delete-article',
                         ],
                     ],
                 ],
@@ -166,7 +166,7 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Allow',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:*/prod/GET/view-article',
+                            'arn:aws:execute-api:eu-west-1:50505050:*/prod/GET/view-article',
                         ],
                         'Condition' => [
                             'NumericLessThanEquals' => [
@@ -222,7 +222,7 @@ final class AuthPolicyTest extends TestCase
                         'Action' => 'execute-api:Invoke',
                         'Effect' => 'Allow',
                         'Resource' => [
-                            'arn:aws:execute-api::eu-west-1:50505050:lka12jk12d/prod/*/*',
+                            'arn:aws:execute-api:eu-west-1:50505050:lka12jk12d/prod/*/*',
                         ],
                     ],
                 ],

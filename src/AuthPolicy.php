@@ -174,7 +174,7 @@ final class AuthPolicy implements \JsonSerializable
         }
 
         $arnPrefix = implode(':', [
-            'arn:aws:execute-api:',
+            'arn:aws:execute-api',
             $this->region,
             $this->accountId,
             $this->apiId,
