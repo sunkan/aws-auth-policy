@@ -96,6 +96,14 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
+    public function allowArn(string $arn, ?array $conditions = null): void
+    {
+        $this->addArn(self::ALLOW, $arn, $conditions);
+    }
+
+    /**
+     * @param mixed[]|null $conditions
+     */
     public function deny(string $verb, string $resource = self::ALL, ?array $conditions = null): void
     {
         $this->add(
@@ -104,6 +112,14 @@ final class AuthPolicy implements \JsonSerializable
             $resource,
             $conditions,
         );
+    }
+
+    /**
+     * @param mixed[]|null $conditions
+     */
+    public function denyArn(string $arn, ?array $conditions = null): void
+    {
+        $this->addArn(self::DENY, $arn, $conditions);
     }
 
     public function addResourcePolicy(ResourcePolicy $policy): void
@@ -171,11 +187,31 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
+    private function addArn(string $effect, string $arn, ?array $conditions): void
+    {
+        if (!str_starts_with($arn, 'arn:')) {
+            throw new \InvalidArgumentException('Arn need to have the following format "arn:%s:%s:%s:%d:%s/%s/%s/%s"');
+        }
+        $arnPartCount = substr_count($arn, ':');
+        $arnParts = explode(':', $arn);
+        [,,$verb] = explode('/', $arnParts[$arnPartCount], 4);
+
+        if (!in_array($verb, self::ALLOWED_VERBS, true)) {
+            throw new \InvalidArgumentException('Not a valid http verb');
+        }
+
+        $this->statements[] = [
+            'effect' => $effect,
+            'arn' => $arn,
+            'conditions' => $conditions,
+        ];
+    }
+
+    /**
+     * @param mixed[]|null $conditions
+     */
     private function add(string $effect, string $verb, string $resource, ?array $conditions = null): void
     {
-        if (!in_array($effect, [self::ALLOW, self::DENY])) {
-            throw new \InvalidArgumentException('Not a valid affect');
-        }
         if (!in_array($verb, self::ALLOWED_VERBS, true)) {
             throw new \InvalidArgumentException('Not a valid http verb');
         }

@@ -262,6 +262,93 @@ final class AuthPolicyTest extends TestCase
                 ],
             ],
         ], $policy->build());
+    }
 
+    public function testAllowArn(): void
+    {
+        $policy = new AuthPolicy(
+            'me',
+            '50505050',
+            [
+                'region' => 'eu-west-1',
+                'stage' => 'prod',
+            ],
+        );
+
+        $arn = 'arn:aws:execute-api:eu-west-1:50505050:dn1gh3pza2/prod/GET/view-article/1';
+
+        $policy->allowArn($arn);
+        self::assertSame([
+            'principalId' => 'me',
+            'policyDocument' => [
+                'Version' => '2012-10-17',
+                'Statement' => [
+                    [
+                        'Action' => 'execute-api:Invoke',
+                        'Effect' => 'Allow',
+                        'Resource' => [
+                            $arn,
+                        ],
+                    ],
+                ],
+            ],
+        ], $policy->build());
+    }
+
+    public function testDenyArn(): void
+    {
+        $policy = new AuthPolicy(
+            'me',
+            '50505050',
+            [
+                'region' => 'eu-west-1',
+                'stage' => 'prod',
+            ],
+        );
+
+        $arn = 'arn:aws:execute-api:eu-west-1:50505050:dn1gh3pza2/prod/GET/view-article/1';
+
+        $policy->denyArn($arn);
+
+        self::assertSame([
+            'principalId' => 'me',
+            'policyDocument' => [
+                'Version' => '2012-10-17',
+                'Statement' => [
+                    [
+                        'Action' => 'execute-api:Invoke',
+                        'Effect' => 'Deny',
+                        'Resource' => [
+                            $arn,
+                        ],
+                    ],
+                ],
+            ],
+        ], $policy->build());
+    }
+
+    /**
+     * @dataProvider invalidArns
+     */
+    public function testInvalidArns(string $arn): void
+    {
+        $policy = new AuthPolicy(
+            'me',
+            '50505050',
+            [],
+        );
+
+
+        $this->expectException(\InvalidArgumentException::class);
+
+        $policy->denyArn($arn);
+    }
+
+    public function invalidArns()
+    {
+        return [
+            ['random-input'],
+            ['arn:aws:execute-api:eu-west-1:50505050:dn1gh3pza2/prod/WRONG/view-article/1']
+        ];
     }
 }
