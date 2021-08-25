@@ -2,6 +2,9 @@
 
 namespace Sunkan\AwsAuthPolicy;
 
+use Sunkan\AwsAuthPolicy\ValueObject\Arn;
+use Sunkan\AwsAuthPolicy\ValueObject\ExecuteApiArn;
+
 final class AuthPolicy implements \JsonSerializable
 {
     private const VERSION = '2012-10-17';
@@ -18,18 +21,7 @@ final class AuthPolicy implements \JsonSerializable
     public const OPTIONS = 'OPTIONS';
     public const ALL = '*';
 
-    private const ALLOWED_VERBS = [
-        self::GET,
-        self::POST,
-        self::PUT,
-        self::PATCH,
-        self::HEAD,
-        self::DELETE,
-        self::OPTIONS,
-        self::ALL,
-    ];
-
-    /** @var array<int, array{effect: string, arn: string, conditions: null|mixed[]}> */
+    /** @var array<int, array{effect: string, arn: Arn, conditions: null|mixed[]}> */
     private array $statements = [];
     /** @var ResourcePolicy[] */
     private array $resourcePolicies = [];
@@ -38,15 +30,23 @@ final class AuthPolicy implements \JsonSerializable
     private string $stage;
     private string $apiId;
 
-    public static function fromMethodArn(string $arn, string $principal = 'me'): self
+    public static function fromMethodArn(ExecuteApiArn|string $arn, string $principal = 'me'): self
     {
-        [$iam, $stage] = explode('/', $arn);
-        [, , , $region, $accountId, $apiId] = explode(':', $iam);
-        return new self($principal, $accountId, [
-            'region' => $region,
-            'stage' => $stage,
-            'apiId' => $apiId,
-        ]);
+        if (is_string($arn)) {
+            $arn = Arn::fromString($arn);
+        }
+        if (!$arn instanceof ExecuteApiArn) {
+            throw new \InvalidArgumentException('Invalid arn. Expect ExecuteApiArn');
+        }
+        return new self(
+            $principal,
+            $arn->accountId ?? '*',
+            [
+                'region' => $arn->region ?: '*',
+                'stage' => $arn->stage ?: '*',
+                'apiId' => $arn->apiId ?: '*',
+            ]
+        );
     }
 
     /**
@@ -96,7 +96,7 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    public function allowArn(string $arn, ?array $conditions = null): void
+    public function allowArn(Arn|string $arn, ?array $conditions = null): void
     {
         $this->addArn(self::ALLOW, $arn, $conditions);
     }
@@ -117,7 +117,7 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    public function denyArn(string $arn, ?array $conditions = null): void
+    public function denyArn(Arn|string $arn, ?array $conditions = null): void
     {
         $this->addArn(self::DENY, $arn, $conditions);
     }
@@ -160,12 +160,12 @@ final class AuthPolicy implements \JsonSerializable
                 $statements[] = [
                     'Action' => 'execute-api:Invoke',
                     'Effect' => $method['effect'],
-                    'Resource' => [$method['arn']],
+                    'Resource' => [$method['arn']->toString()],
                     'Condition' => $method['conditions'],
                 ];
             }
             else {
-                $effectStatements[$method['effect']]['Resource'][] = $method['arn'];
+                $effectStatements[$method['effect']]['Resource'][] = $method['arn']->toString();
             }
         }
 
@@ -187,19 +187,11 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    private function addArn(string $effect, string $arn, ?array $conditions): void
+    private function addArn(string $effect, string|Arn $arn, ?array $conditions): void
     {
-        if (!str_starts_with($arn, 'arn:')) {
-            throw new \InvalidArgumentException('Arn need to have the following format "arn:%s:%s:%s:%d:%s/%s/%s/%s"');
+        if (!$arn instanceof Arn) {
+            $arn = Arn::fromString($arn);
         }
-        $arnPartCount = substr_count($arn, ':');
-        $arnParts = explode(':', $arn);
-        [,,$verb] = explode('/', $arnParts[$arnPartCount], 4);
-
-        if (!in_array($verb, self::ALLOWED_VERBS, true)) {
-            throw new \InvalidArgumentException('Not a valid http verb');
-        }
-
         $this->statements[] = [
             'effect' => $effect,
             'arn' => $arn,
@@ -212,32 +204,14 @@ final class AuthPolicy implements \JsonSerializable
      */
     private function add(string $effect, string $verb, string $resource, ?array $conditions = null): void
     {
-        if (!in_array($verb, self::ALLOWED_VERBS, true)) {
-            throw new \InvalidArgumentException('Not a valid http verb');
-        }
-
-        if ($resource[0] === '/') {
-            $resource = substr($resource, 1);
-        }
-
-        $arnPrefix = implode(':', [
-            'arn:aws:execute-api',
+        $this->addArn($effect, ExecuteApiArn::http(
+            $verb,
+            ltrim($resource, '/'),
+            $this->stage,
+            $this->apiId,
             $this->region,
             $this->accountId,
-            $this->apiId,
-        ]);
-        $resourceArn = implode('/', [
-            $arnPrefix,
-            $this->stage,
-            $verb,
-            $resource,
-        ]);
-
-        $this->statements[] = [
-            'effect' => $effect,
-            'arn' => $resourceArn,
-            'conditions' => $conditions,
-        ];
+        ), $conditions);
     }
 
     public function jsonSerialize()

@@ -5,6 +5,8 @@ namespace Tests;
 use PHPUnit\Framework\TestCase;
 use Sunkan\AwsAuthPolicy\AuthPolicy;
 use Sunkan\AwsAuthPolicy\ResourcePolicy;
+use Sunkan\AwsAuthPolicy\ValueObject\Arn;
+use Sunkan\AwsAuthPolicy\ValueObject\ExecuteApiArn;
 use Tests\Stub\StubResourcePolicy;
 
 final class AuthPolicyTest extends TestCase
@@ -181,7 +183,7 @@ final class AuthPolicyTest extends TestCase
         ], $policy->build());
     }
 
-    public function testCantGenerateEmptyPolicy()
+    public function testCantGenerateEmptyPolicy(): void
     {
         $policy = new AuthPolicy(
             'me',
@@ -232,7 +234,7 @@ final class AuthPolicyTest extends TestCase
         ], $policy->build());
     }
 
-    public function testResourcePolicy()
+    public function testResourcePolicy(): void
     {
         $policy = new AuthPolicy(
             'me',
@@ -344,11 +346,44 @@ final class AuthPolicyTest extends TestCase
         $policy->denyArn($arn);
     }
 
-    public function invalidArns()
+    /**
+     * @return string[][]
+     */
+    public function invalidArns(): array
     {
         return [
             ['random-input'],
             ['arn:aws:execute-api:eu-west-1:50505050:dn1gh3pza2/prod/WRONG/view-article/1']
         ];
+    }
+
+    public function testCreatePolicyFromArn(): void
+    {
+        /** @var ExecuteApiArn $arn */
+        $arn = Arn::fromString('arn:aws:execute-api:eu-west-1:50505050:lka12jk12d/prod/test-resource');
+        $policy = AuthPolicy::fromMethodArn($arn);
+        $policy->allowAll();
+
+        self::assertSame([
+            'principalId' => 'me',
+            'policyDocument' => [
+                'Version' => '2012-10-17',
+                'Statement' => [
+                    [
+                        'Action' => 'execute-api:Invoke',
+                        'Effect' => 'Allow',
+                        'Resource' => [
+                            'arn:aws:execute-api:eu-west-1:50505050:lka12jk12d/prod/*/*',
+                        ],
+                    ],
+                ],
+            ],
+        ], $policy->build());
+    }
+
+    public function testCreateWithInvalidArn(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        AuthPolicy::fromMethodArn('arn:aws:lambda:eu-west-1:123456789:Layer:my-layer:42');
     }
 }
