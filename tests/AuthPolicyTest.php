@@ -312,6 +312,7 @@ final class AuthPolicyTest extends TestCase
 
         $policy->denyArn($arn);
 
+        self::assertFalse($policy->isEmpty());
         self::assertSame([
             'principalId' => 'me',
             'policyDocument' => [
@@ -344,6 +345,17 @@ final class AuthPolicyTest extends TestCase
         $this->expectException(\InvalidArgumentException::class);
 
         $policy->denyArn($arn);
+    }
+
+    public function testIsEmpty(): void
+    {
+        $policy = new AuthPolicy(
+            'me',
+            '50505050',
+            [],
+        );
+
+        self::assertTrue($policy->isEmpty());
     }
 
     /**

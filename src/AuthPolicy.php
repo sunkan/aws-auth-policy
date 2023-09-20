@@ -214,8 +214,13 @@ final class AuthPolicy implements \JsonSerializable
         ), $conditions);
     }
 
-    public function jsonSerialize()
+    public function jsonSerialize(): mixed
     {
         return $this->build();
+    }
+
+    public function isEmpty(): bool
+    {
+        return !$this->statements;
     }
 }
