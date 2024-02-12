@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sunkan\AwsAuthPolicy\ValueObject\Arn;
 use Sunkan\AwsAuthPolicy\ValueObject\ExecuteApiArn;
@@ -213,9 +214,7 @@ final class ArnTest extends TestCase
         $this->assertSame(IamArn::TYPE_ROOT, $arnObject->type);
     }
 
-    /**
-     * @dataProvider iamTypes
-     */
+    #[DataProvider('iamTypes')]
     public function testIamTypes(string $arn, string $type, string $name, string $path): void
     {
         $arnObject = Arn::fromString($arn);
@@ -232,7 +231,7 @@ final class ArnTest extends TestCase
     /**
      * @return string[][]
      */
-    public function iamTypes(): array
+    public static function iamTypes(): array
     {
         return [
             [

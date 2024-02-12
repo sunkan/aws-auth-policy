@@ -2,6 +2,7 @@
 
 namespace Tests;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Sunkan\AwsAuthPolicy\AuthPolicy;
 use Sunkan\AwsAuthPolicy\ResourcePolicy;
@@ -330,9 +331,7 @@ final class AuthPolicyTest extends TestCase
         ], $policy->build());
     }
 
-    /**
-     * @dataProvider invalidArns
-     */
+    #[DataProvider('invalidArns')]
     public function testInvalidArns(string $arn): void
     {
         $policy = new AuthPolicy(
@@ -361,7 +360,7 @@ final class AuthPolicyTest extends TestCase
     /**
      * @return string[][]
      */
-    public function invalidArns(): array
+    public static function invalidArns(): array
     {
         return [
             ['random-input'],
