@@ -7,7 +7,6 @@ use Sunkan\AwsAuthPolicy\ResourcePolicy;
 
 final class StubResourcePolicy implements ResourcePolicy
 {
-
     public function configurePolicy(AuthPolicy $policy): void
     {
         $policy->allow(AuthPolicy::GET, '/test/path');

@@ -23,7 +23,7 @@ final class AuthPolicy implements \JsonSerializable
 
     /** @var array<int, array{effect: string, arn: Arn, conditions: null|mixed[]}> */
     private array $statements = [];
-    /** @var ResourcePolicy[] */
+    /** @var list<ResourcePolicy> */
     private array $resourcePolicies = [];
 
     private string $region;
@@ -53,9 +53,9 @@ final class AuthPolicy implements \JsonSerializable
      * @param array{region?:string, stage?:string, apiId?:string} $options
      */
     public function __construct(
-        private string $principal,
-        private string $accountId,
-        private array $options,
+        private readonly string $principal,
+        private readonly string $accountId,
+        private readonly array $options,
     ) {
         $this->region = $this->options['region'] ?? '*';
         $this->stage = $this->options['stage'] ?? '*';
@@ -83,8 +83,11 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    public function allow(string $verb, string $resource = self::ALL, ?array $conditions = null): void
-    {
+    public function allow(
+        string $verb,
+        string $resource = self::ALL,
+        ?array $conditions = null,
+    ): void {
         $this->add(
             self::ALLOW,
             $verb,
@@ -104,8 +107,11 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    public function deny(string $verb, string $resource = self::ALL, ?array $conditions = null): void
-    {
+    public function deny(
+        string $verb,
+        string $resource = self::ALL,
+        ?array $conditions = null,
+    ): void {
         $this->add(
             self::DENY,
             $verb,
@@ -202,8 +208,12 @@ final class AuthPolicy implements \JsonSerializable
     /**
      * @param mixed[]|null $conditions
      */
-    private function add(string $effect, string $verb, string $resource, ?array $conditions = null): void
-    {
+    private function add(
+        string $effect,
+        string $verb,
+        string $resource,
+        ?array $conditions = null,
+    ): void {
         $this->addArn($effect, ExecuteApiArn::http(
             $verb,
             ltrim($resource, '/'),
